@@ -309,7 +309,7 @@ export const getStorageFixturesV1 = (): StorageData[] => ([{
     'viewed-notification-time': 123456789,
 }]);
 
-type SafebrowsingCacheDataV1 = { key: string, value: string };
+type SafebrowsingCacheDataV1 = { key: string; value: string };
 
 export const getStorageFixturesV2 = (expires: number): StorageData[] => {
     const storageSettingsFixturesV1 = getStorageFixturesV1();
@@ -702,7 +702,7 @@ export const getStorageFixturesV11 = (expires: number): StorageData[] => {
         const keys = Object.keys(settings);
 
         // Part 1. Migrate serialized data.
-        // Some date, like typed arrays, are not JSON serializable. In IDB, we can store such data without any problems.
+        // Some data, like typed arrays, are not JSON serializable. In IDB, we can store such data without any problems.
         // But if IDB is not supported, hybrid storage falls back to browser.storage.local,
         // where we only can store JSON-serializable data.
         // To be able to store such data in browser.storage.local, we serialize such data when using hybrid storage.
@@ -759,6 +759,58 @@ export const getStorageFixturesV11 = (expires: number): StorageData[] => {
         });
 
         settings['schema-version'] = 11;
+
+        return settings;
+    });
+};
+
+export const getStorageFixturesV12 = (expires: number): StorageData[] => {
+    const storageSettingsFixturesV11 = getStorageFixturesV11(expires);
+
+    return storageSettingsFixturesV11.map((settings) => {
+        if (!__IS_MV3__) {
+            const adgSettings = settings['adguard-settings'] as Record<string, unknown>;
+
+            // Parse with zod to sort fields
+            const filtersState = zod.record(
+                zod.string(),
+                zod.object({
+                    enabled: zod.boolean(),
+                    installed: zod.boolean(),
+                    loaded: zod.boolean(),
+                }),
+            ).parse(JSON.parse(adgSettings['filters-state'] as string));
+
+            const groupsState = JSON.parse(adgSettings['groups-state'] as string);
+
+            const isAnnoyancesFilterEnabled = filtersState['14']?.enabled ?? false;
+
+            delete filtersState['14'];
+
+            const annoyancesFiltersState = Object.fromEntries(
+                ['18', '19', '20', '21', '22'].map((id) => {
+                    const state = filtersState[id] ?? {
+                        enabled: isAnnoyancesFilterEnabled,
+                        installed: false,
+                        loaded: false,
+                    };
+                    return [id, state];
+                }),
+            );
+
+            Object.assign(filtersState, annoyancesFiltersState);
+
+            // deprecated AdGuard DNS filter is simply removed
+            delete filtersState['15'];
+
+            adgSettings['filters-state'] = JSON.stringify(filtersState);
+            adgSettings['groups-state'] = JSON.stringify(groupsState);
+
+            settings['adguard-settings'] = adgSettings;
+            // Migration need only for MV3.
+        }
+
+        settings['schema-version'] = 12;
 
         return settings;
     });
