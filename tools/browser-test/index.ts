@@ -45,7 +45,7 @@ import {
 } from './test-constants';
 import {
     addQunitListeners,
-    SerializedConfiguration,
+    type SerializedConfiguration,
     setTsWebExtensionConfig,
     waitUntilExtensionInitialized,
 } from './page-injections';
@@ -55,7 +55,7 @@ import {
     logTestResult,
     logTestTimeout,
     logTestUnknownError,
-    TestDetails,
+    type TestDetails,
 } from './logger';
 import { Product } from './product';
 import { TestStatus } from './text-color';
@@ -75,7 +75,7 @@ type TestRunOptions = {
     /**
      * Enable debug mode with pause page for specified id.
      */
-    debug: string,
+    debug: string;
 };
 
 /**
@@ -392,7 +392,6 @@ const runTests = async (
     // run testcases
     // eslint-disable-next-line no-restricted-syntax
     for (const testcase of filteredTestsCases) {
-        // eslint-disable-next-line no-await-in-loop
         const testSuccess = await runTest(
             backgroundPage,
             page,

@@ -1,5 +1,5 @@
 import {
-    Config,
+    type Config,
     RootOption,
     PROTOCOL_VERSION,
     GeneralSettingsOption,
@@ -32,10 +32,10 @@ export const getDefaultExportFixture = (isMv3: boolean): Config => ({
         [ExtensionSpecificSettingsOption.UserRulesEditorWrap]: false,
     },
     [RootOption.Filters]: {
-        // TODO: uncomment this when quick fixes filter will be supported for MV3
-        // // For MV3 we added AdGuard Quick Fixes filter enabled by default.
-        // [FiltersOption.EnabledFilters]: isMv3 ? [2, 10, 24] : [2, 10],
+        // For MV3 we added AdGuard Quick Fixes filter enabled by default.
         [FiltersOption.EnabledFilters]: [2, 10],
+        // TODO: revert if Quick Fixes filter is back
+        // [FiltersOption.EnabledFilters]: isMv3 ? [2, 10, 24] : [2, 10],
         [FiltersOption.EnabledGroups]: [1, 6],
         [FiltersOption.CustomFilters]: [],
         [FiltersOption.UserFilter]: {

@@ -58,6 +58,7 @@ AdGuard is a fast and lightweight ad blocking browser extension that effectively
         - [Debug MV3 declarative rules](#dev-debug-mv3)
     - [Linter](#dev-linter)
     - [Update localizations](#dev-localizations)
+    - [Bundle Size Monitoring](#dev-bundle-size-monitoring)
 - [Permissions required](#permissions-required)
 - [Auto-publish builds](#auto-publish-builds)
 - [Minimum supported browser versions](#browser-compatibility)
@@ -188,7 +189,7 @@ To make a dev build for a specific browser, run:
 pnpm dev <browser>
 ```
 
-Where `<browser>` is one of the following: `chrome`, `chrome-mv3`, `edge`, `opera`, `firefox`,
+Where `<browser>` is one of the following: `chrome`, `chrome-mv3`, `edge`, `opera`, `firefox-amo`,
 `firefox-standalone`, like this:
 
 ```shell
@@ -292,6 +293,20 @@ pnpm release
 You will need to put certificate.pem file to the `./private/AdguardBrowserExtension` directory. This
 build will create unpacked extensions and then pack them (crx for Chrome).
 
+For testing purposes for `dev` command credentials taken from `./tests/certificate-test.pem` file.
+
+WARNING: DO NOT USE TEST CREDENTIALS FOR PRODUCTION BUILDS, BECAUSE THEY ARE AVAILABLE IN PUBLIC.
+
+##### How to generate credentials for `crx` builds
+
+You can use [Crx CLI `keygen`](https://github.com/thom4parisot/crx#crx-keygen-directory)
+to generate credentials for `crx` builds, see the example below:
+
+```bash
+# Command will generate `key.pem` credential in the `./private/AdguardBrowserExtension` directory
+pnpm crx keygen ./private/AdguardBrowserExtension
+```
+
 #### <a name="dev-for-firefox-reviewers"></a> Special building instructions for Firefox reviewers
 
 1. To ensure that the extension is built in the same way, use the docker image:
@@ -321,7 +336,7 @@ build will create unpacked extensions and then pack them (crx for Chrome).
     cd ./build/beta
     ```
 
-1. Compare the generated `firefox.zip` file with the uploaded one.
+1. Compare the generated `firefox-standalone.zip` file with the uploaded one.
 
 If you need to build the **RELEASE** version:
 
@@ -368,16 +383,16 @@ build/analyze-reports
 
 #### <a name="dev-debug-mv3"></a> Debug MV3 declarative rules
 
-If you want to debug MV3 declarative rules and check exactly which rules has been applied for some requests, you can build extension in dev mode as described in the upper [How to build](#dev-build) section, but for specified branch, in which we develop MV3 version.
+If you want to debug MV3 declarative rules and check exactly which rules have been applied to requests, you can build and install the extension as described in the sections below. This will allow you to view the applied declarative rules in the filtering log.
 
-Then install extension via developer mode, make requests and see applied declarative rules in the filtering log.
+Additionally, you can edit filters and rebuild DNR rulesets without rebuilding the entire extension, which may be useful for debugging purposes.
 
-##### How to build MV3 extension
+##### <a name="dev-debug-mv3-how-to-build"></a>  How to build the MV3 extension
 
-1. Switch to the `v5.0` branch:
+1. Ensure that you have installed all dependencies as described in the [Requirements](#dev-requirements) section.
 
     ```shell
-    git checkout v5.0
+    pnpm install
     ```
 
 1. Run the following command in the terminal:
@@ -386,13 +401,13 @@ Then install extension via developer mode, make requests and see applied declara
     pnpm dev chrome-mv3
     ```
 
-1. The built extension will be located in the directory:
+1. The built extension will be located in the following directory:
 
     ```shell
     ./build/dev/chrome-mv3
     ```
 
-##### How to install unpacked in the browser
+##### How to install the unpacked extension in the browser
 
 1. Turn on developer mode:
 
@@ -406,29 +421,116 @@ Then install extension via developer mode, make requests and see applied declara
 
     ![Select](https://cdn.adtidy.org/content/Kb/ad_blocker/browser_extension/select.png)
 
-That's it!
-
 ##### How to debug rules
 
-1. Find and modify the rule you need in the `./Extension/filters/chromium-mv3` directory in the `.txt` files.
+You can debug and update DNR rulesets without rebuilding the entire extension. There are two main workflows:
 
-1. Convert the rules from txt to declarative form:
+**A. Automatic (recommended for most cases):**
 
+1. **Build the extension** (if not done yet):
     ```shell
-    pnpm convert-declarative
-    ```
-
-1. Build the extension again:
-
-    ```shell
+    pnpm install
     pnpm dev chrome-mv3
     ```
 
-1. Reload the extension in the browser:
+1. **Start watching for filter changes:**
+    ```shell
+    pnpm debug-filters:watch
+    ```
+    - This will extract text filters to `./build/dev/chrome-mv3/filters` and watch for changes.
+    - When you edit and save any filter file, DNR rulesets will be rebuilt automatically.
 
-    ![Reload extension](https://cdn.adtidy.org/content/Kb/ad_blocker/browser_extension/reload_extension.png)
+1. **Reload the extension in your browser** to apply new rulesets.
 
-1. If you see an ❗ mark - it means that assumed rule (which we calculated with our tsurlfilter engine, which performed applying rules in MV2) and actually applied rule (from which we converted to DNR rule) are not the same. And this can be a problem of conversion. <br/> Otherwise, if assumed and applied rules are the same - only applied rule (in text and declarative ways) will be shown.
+**B. Manual (for advanced/manual control):**
+
+1. **Build the extension** (if not done yet):
+    ```shell
+    pnpm install
+    pnpm dev chrome-mv3
+    ```
+
+1. **Extract text filters:**
+    ```shell
+    pnpm debug-filters:extract
+    ```
+
+1. **Edit the text filters** in `./build/dev/chrome-mv3/filters` as needed.
+
+1. **Convert filters to DNR rulesets:**
+    ```shell
+    pnpm debug-filters:convert
+    ```
+
+1. **Reload the extension in your browser** to apply new rulesets.
+
+**Tip:**
+- To download the latest available text filters, run:
+    ```shell
+    pnpm debug-filters:load
+    ```
+
+If you see an exclamation mark in the filtering log, it means the assumed rule (calculated by the engine) and the applied rule (converted to DNR) are different. Otherwise, only the applied rule (in DNR and text ways) will be shown.
+
+##### <a name="dev-technical-info-about-debug-commands"></a> Technical information about commands
+
+- **Watch for changes and auto-convert:**
+    ```shell
+    pnpm debug-filters:watch
+    # Under the hood:
+    pnpm exec dnr-rulesets watch \
+        # Enable extended logging about rulesets, since it is optional - it can be removed
+        --debug \
+        # Path to the extension manifest
+        ./build/dev/chrome-mv3/manifest.json \
+        # Path to web-accessible-resources directory (needed for $redirect rules)
+        # relative to the root directory of the extension (because they will be
+        # loaded during runtime).
+        /web-accessible-resources/redirects
+    ```
+- **Load latest text filters and metadata:**
+    ```shell
+    pnpm debug-filters:load
+    # Under the hood:
+    pnpm exec dnr-rulesets load
+        # This will load latest text filters with their metadata
+        --latest-filters
+        # Destination path for text filters
+        ./build/dev/chrome-mv3/filters
+    ```
+- **Manual conversion:**
+    ```shell
+    pnpm debug-filters:convert
+    # Under the hood:
+    pnpm exec tsurlfilter convert \
+        # Enable extended logging about rulesets
+        --debug \
+        # Path to the directory with text filters
+        ./build/dev/chrome-mv3/filters \
+        # Path to web-accessible-resources directory (needed for $redirect rules)
+        # relative to the root directory of the extension (because they will be
+        # loaded during runtime).
+        /web-accessible-resources/redirects \
+        # Destination path for converted DNR rulesets
+        ./build/dev/chrome-mv3/filters/declarative
+    ```
+- **Extract text filters from DNR rulesets:**
+    ```shell
+    pnpm debug-filters:extract
+    # Under the hood:
+    pnpm exec tsurlfilter extract-filters \
+        # Path to the directory with DNR rulesets
+        ./build/dev/chrome-mv3/filters/declarative \
+        # Path to save extracted text filters
+        ./build/dev/chrome-mv3/filters
+    ```
+
+For all command options, use `--help`, e.g.:
+```shell
+pnpm exec dnr-rulesets watch --help
+pnpm exec tsurlfilter convert --help
+```
+
 
 ### <a name="dev-linter"></a> Linter
 
@@ -468,6 +570,85 @@ To show locales info run:
 pnpm locales info
 ```
 
+### <a name="dev-bundle-size-monitoring"></a> Bundle Size Monitoring
+
+The browser extension project includes a comprehensive bundle size monitoring system, located in `tools/bundle-size`. This system helps ensure that our extension bundles remain within defined size limits, and that any significant increases are reviewed and justified.
+
+#### Key Features
+
+- Tracks and compares bundle sizes across different build types (`beta`, `release`, etc.) and browser targets (`chrome`, `chrome-mv3`, `edge`, etc.)
+- Detects significant size increases using configurable thresholds (default: 10%)
+- Ensures Chrome MV3 bundle stays under the 30MB limit
+- Checks for duplicate package versions using `pnpm`
+- Stores historical size data in `.bundle-sizes.json`
+- Designed for CI/CD integration (Bamboo)
+- **For Firefox targets (AMO and Standalone) only**, every individual `.js` file is checked to ensure it does not exceed the 4MB limit imposed by the Firefox Add-ons Store. If any `.js` file is larger than 4MB, the check fails and the offending files are reported.
+
+#### How it works
+
+- On each beta or release build, the system compares the current bundle sizes to the reference values in `.bundle-sizes.json`.
+- If any size exceeds the configured threshold, or additionally check for 30MB limit for Chrome MV3 target or 4MB limit for Firefox targets - the check fails.
+- Duplicate package versions are detected and reported.
+
+#### To update the bundle sizes manually
+
+We have defined size limits in the project.
+
+1. When we build the `beta` or `release` version, the build process checks if we’re exceeding those limits.
+2. If we exceed the limits, the developer should investigate the cause and decide whether the size increase is acceptable.
+3. If the new sizes are justified, the developer updates the size values in the package and creates a commit.
+4. We then review and approve any changes to the sizes as part of the PR process.
+
+##### Steps
+
+1. Run the build for the desired environment (e.g., `pnpm beta` or `pnpm release`).
+2. If the build fails due to bundle size limits, investigate the cause (e.g., new dependencies, large assets).
+3. If the increase is justified, update the reference sizes by running:
+
+    ```shell
+    pnpm update-bundle-size <buildEnv> [targetBrowser]
+    # Example: pnpm update-bundle-size release chrome-mv3
+    # Or: pnpm update-bundle-size beta firefox-amo
+    # Or: pnpm update-bundle-size dev
+    ```
+
+4. Commit the updated `.bundle-sizes.json` file and include justification in your PR.
+5. The changes will be reviewed and approved as part of the PR process.
+
+#### Checking bundle size locally
+
+To check bundle sizes locally, use:
+
+```shell
+pnpm check-bundle-size <buildEnv> [targetBrowser]
+# Example: pnpm check-bundle-size release chrome-mv3
+# Or: pnpm check-bundle-size beta firefox-amo
+# Or: pnpm check-bundle-size dev
+```
+
+For CLI help on parameters, use:
+
+```shell
+pnpm check-bundle-size --help
+pnpm update-bundle-size --help
+```
+
+#### Usage: Custom Threshold
+
+You can override the default threshold for significant bundle size increases using the `--threshold` option:
+
+```sh
+pnpm check-bundle-size <buildEnv> [targetBrowser] --threshold 5
+# or
+pnpm check-bundle-size release chrome-mv3 --threshold=20
+# or
+pnpm check-bundle-size beta
+```
+
+- `--threshold <number>`: Sets the allowed percentage increase in bundle size before the check fails. Default: 10%.
+
+This is useful for temporarily relaxing or tightening the allowed size delta for a specific check/build.
+
 ## <a name="permissions-required"></a> Permissions required
 
 - `tabs`                          - this permission is required in order to get the URL of the options page tab
@@ -480,6 +661,7 @@ pnpm locales info
 - `declarativeNetRequestFeedback` - this permission is required in order to create a log of the blocked, redirected or modified URL requests
 - `unlimitedStorage`              - this permission is required in order to save large filters
 - `webNavigation`                 - this permission is required in order to catch the moment for injecting scriptlets
+- `userScripts`                   - this permission is required to let the user subscribe to custom filter lists and evaluate rules from these lists
 
 ## <a name="auto-publish-builds"></a> Auto-publish builds
 

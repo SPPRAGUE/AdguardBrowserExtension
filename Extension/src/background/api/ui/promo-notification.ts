@@ -23,7 +23,7 @@ import {
     notificationStorage,
     browserStorage,
 } from '../../storages';
-import { NotificationTextRecord } from '../../schema';
+import { type NotificationTextRecord } from '../../schema';
 import { LAST_NOTIFICATION_TIME_KEY, VIEWED_NOTIFICATIONS_KEY } from '../../../common/constants';
 import { I18n } from '../../utils';
 
@@ -32,7 +32,7 @@ import { UiApi } from './main';
 /**
  * Promo notification API is needed to work with notifications.
  */
-export class PromoNotificationApi {
+class PromoNotificationApi {
     private static readonly CHECK_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
     private static readonly MIN_PERIOD_MS = 30 * 60 * 1000; // 30 minutes

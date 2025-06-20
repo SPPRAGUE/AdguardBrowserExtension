@@ -16,7 +16,7 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO: Uncomment this file when Quick Fixes filter will be supported for MV3
+// TODO: revert if Quick Fixes filter is back
 // import { type PreprocessedFilterList } from '@adguard/tsurlfilter';
 
 // import { logger } from '../../../common/logger';
@@ -90,7 +90,7 @@
 //     public static isEnabled(): boolean {
 //         const filterMetadata = FiltersApi.getFilterMetadata(AntiBannerFiltersId.QuickFixesFilterId);
 //         if (!filterMetadata) {
-//             logger.error('Not found metadata from Quick Fixes filter');
+//             logger.error('[ext.QuickFixesRulesApi.isEnabled]: not found metadata from Quick Fixes filter');
 
 //             return false;
 //         }
@@ -105,7 +105,7 @@
 //      * @returns Rules from quick fixes filter.
 //      */
 //     public static async getQuickFixesRules(): Promise<PreprocessedFilterList> {
-//         const data = await FiltersStorage.getAllFilterData(AntiBannerFiltersId.QuickFixesFilterId);
+//         const data = await FiltersStorage.get(AntiBannerFiltersId.QuickFixesFilterId);
 
 //         if (!data) {
 //             return { ...emptyPreprocessedFilterList };

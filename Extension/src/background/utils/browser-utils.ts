@@ -17,6 +17,7 @@
  */
 import { Prefs } from '../prefs';
 import { appContext, AppContextKey } from '../storages/app';
+import { CHROME_EXTENSIONS_SETTINGS_URL } from '../../common/constants';
 import { logger } from '../../common/logger';
 
 import { Version } from './version';
@@ -58,6 +59,22 @@ export class BrowserUtils {
     }
 
     /**
+     * Returns extension details url,
+     * e.g. `chrome://extensions/?id=<extensionId>`.
+     *
+     * Needed for User Scripts API toggle.
+     *
+     * @see https://developer.chrome.com/docs/extensions/reference/api/userScripts#chrome_versions_138_and_newer_allow_user_scripts_toggle
+     *
+     * @returns Extension details url.
+     */
+    public static getExtensionDetailsUrl(): string {
+        const url = new URL(CHROME_EXTENSIONS_SETTINGS_URL);
+        url.searchParams.set('id', Prefs.id);
+        return url.toString();
+    }
+
+    /**
      * Retrieves locales from navigator.
      *
      * @param limit Limit of returned locales.
@@ -91,7 +108,7 @@ export class BrowserUtils {
             // eslint-disable-next-line no-new
             new Version(version);
         } catch (e: unknown) {
-            logger.debug(`Can not parse version: "${version}", error: `, e);
+            logger.debug(`[ext.BrowserUtils.isSemver]: can not parse version: "${version}", error:`, e);
             return false;
         }
         return true;

@@ -1,31 +1,38 @@
 import { test } from 'vitest';
-// TODO: uncomment this when quick fixes filter will be supported for MV3
+// TODO: revert if Quick Fixes is back
 
 // TODO: remove later
 // empty test
 test('', () => { });
 
-// import { Storage } from 'webextension-polyfill';
+// import { type Storage } from 'webextension-polyfill';
+// import {
+//     vi,
+//     describe,
+//     it,
+//     beforeEach,
+//     afterEach,
+//     expect,
+// } from 'vitest';
 
 // import { FiltersDownloader } from '@adguard/filters-downloader/browser';
 
 // import { App } from 'app';
 
 // import { fakeFilterV1 } from '../../../../helpers/fixtures/fake_filter_v1';
-// // import { QuickFixesRulesApi } from '../../../../../Extension/src/background/api';
-// import { FiltersStorage } from '../../../../../Extension/src/background/storages/filters';
+// import { QuickFixesRulesApi } from '../../../../../Extension/src/background/api';
 // import { RawFiltersStorage } from '../../../../../Extension/src/background/storages/raw-filters';
 // import { metadataStorage } from '../../../../../Extension/src/background/storages';
 // import { mockLocalStorage } from '../../../../helpers/mocks/storage';
-// import { getStorageFixturesV7 } from '../../../../helpers/fixtures/getStorageFixtures';
 // import { type Metadata } from '../../../../../Extension/src/background/schema';
 // import { fakeFilterV2 } from '../../../../helpers/fixtures/fake_filter_v2';
+// import { FiltersStoragesAdapter } from '../../../../../Extension/src/background/storages/filters-adapter';
 
 // vi.mock('../../../../../Extension/src/background/engine');
 // vi.mock('../../../../../Extension/src/background/api/ui/icons');
 // vi.mock('../../../../../Extension/src/background/storages/notification');
 
-// describe('Quick Fixes API should', () => {
+// describe.skipIf(!__IS_MV3__)('Quick Fixes API should', () => {
 //     let storage: Storage.StorageArea;
 
 //     const definedExpressions = {
@@ -38,7 +45,7 @@ test('', () => { });
 //     };
 
 //     beforeEach(async () => {
-//         storage = mockLocalStorage(getStorageFixturesV7(0)[0]);
+//         storage = mockLocalStorage();
 //         await App.init();
 //     });
 
@@ -51,14 +58,9 @@ test('', () => { });
 //         .concat('+00:00');
 
 //     it('check for updates of Quick Fixes filter from remote and partially update metadata', async () => {
-//         if (!__IS_MV3__) {
-//             expect(true).toBeTruthy();
-//             return;
-//         }
-
 //         const filterId = 24;
 
-//         let mock = jest.spyOn(FiltersDownloader, 'downloadWithRaw')
+//         let mock = vi.spyOn(FiltersDownloader, 'downloadWithRaw')
 //             .mockImplementation(() => Promise.resolve({
 //                 filter: fakeFilterV1.split('\n'),
 //                 rawFilter: fakeFilterV1,
@@ -67,9 +69,8 @@ test('', () => { });
 //         // Read metadata from local storage.
 //         const metadata: Metadata = JSON.parse(JSON.stringify(metadataStorage.getData()));
 
-//         // FIXME fix tests
 //         // First load and enable Quick Fixes.
-//         // await QuickFixesRulesApi.loadAndEnableQuickFixesRules();
+//         await QuickFixesRulesApi.loadAndEnableQuickFixesRules();
 
 //         // Check that filter has been updated.
 //         expect(FiltersDownloader.downloadWithRaw).nthCalledWith(
@@ -82,7 +83,7 @@ test('', () => { });
 //                 validateChecksumStrict: true,
 //             },
 //         );
-//         expect(await FiltersStorage.getPreprocessedFilterList(filterId)).toEqual(fakeFilterV1);
+//         expect(await FiltersStoragesAdapter.getRawFilterList(filterId)).toEqual(fakeFilterV1);
 //         expect(await RawFiltersStorage.get(filterId)).toEqual(fakeFilterV1);
 
 //         // Check that metadata was changed only for the Quick Fixes filter.
@@ -99,14 +100,14 @@ test('', () => { });
 
 //         // Update mocked filter.
 //         mock.mockRestore();
-//         mock = jest.spyOn(FiltersDownloader, 'downloadWithRaw')
+//         mock = vi.spyOn(FiltersDownloader, 'downloadWithRaw')
 //             .mockImplementation(() => Promise.resolve({
 //                 filter: fakeFilterV2.split('\n'),
 //                 rawFilter: fakeFilterV2,
 //             }));
 
 //         // Update Quick Fixes filter.
-//         // await QuickFixesRulesApi.updateQuickFixesFilter();
+//         await QuickFixesRulesApi.updateQuickFixesFilter();
 
 //         // Check that filter has been updated.
 //         expect(FiltersDownloader.downloadWithRaw).nthCalledWith(
@@ -119,7 +120,7 @@ test('', () => { });
 //                 validateChecksumStrict: true,
 //             },
 //         );
-//         expect(await FiltersStorage.getPreprocessedFilterList(filterId)).toEqual(fakeFilterV2);
+//         expect(await FiltersStoragesAdapter.getRawFilterList(filterId)).toEqual(fakeFilterV2);
 //         expect(await RawFiltersStorage.get(filterId)).toEqual(fakeFilterV2);
 
 //         // Check that metadata was changed only for the Quick Fixes filter.

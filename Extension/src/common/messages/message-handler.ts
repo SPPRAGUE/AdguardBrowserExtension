@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
-import browser, { Runtime } from 'webextension-polyfill';
+import browser, { type Runtime } from 'webextension-polyfill';
 
 import { type EngineMessage } from 'engine';
 
@@ -28,7 +28,7 @@ import {
     APP_MESSAGE_HANDLER_NAME,
 } from './constants';
 
-export type MessageListener<T extends ValidMessageTypes> = (
+type MessageListener<T extends ValidMessageTypes> = (
     message: ExtractedMessage<T>,
     sender: Runtime.MessageSender,
 ) => Promise<ExtractMessageResponse<T>> | ExtractMessageResponse<T>;

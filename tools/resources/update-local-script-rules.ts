@@ -111,7 +111,7 @@ const updateLocalScriptRulesForBrowser = async (browser: AssetsFiltersBrowser) =
             [key: string]: {
                 permittedDomains: string[];
                 restrictedDomains: string[];
-            }[],
+            }[];
         };
     } = {
         comment: LOCAL_SCRIPT_RULES_COMMENT,
@@ -120,7 +120,6 @@ const updateLocalScriptRulesForBrowser = async (browser: AssetsFiltersBrowser) =
 
     // eslint-disable-next-line no-restricted-syntax
     for (const filterId of ADGUARD_FILTERS_IDS) {
-        // eslint-disable-next-line no-await-in-loop
         const rawFilterList = (await fs.readFile(`${folder}/filter_${filterId}.txt`)).toString();
         const filterListNode = FilterListParser.parse(rawFilterList, {
             ...defaultParserOptions,
@@ -264,7 +263,7 @@ const saveToJsFile = async (rawContent: string, fileName: string): Promise<void>
  *
  * It is possible to follow all places using this logic by searching JS_RULES_EXECUTION.
  *
- * This is STEP 1.1.
+ * This is STEP 1.
  *
  * @param jsRules Set of unique JS rules collected from the pre-built filters.
  */
@@ -344,7 +343,6 @@ export const updateLocalScriptRulesForChromiumMv3 = async (jsRules: Set<string>)
             // wrap the code with a try-catch block with extra checking to avoid multiple executions
             processedCode = wrapScriptCode(uniqueId, processedCode);
 
-            // eslint-disable-next-line no-await-in-loop
             const minified = await minify(processedCode, {
                 compress: {
                     sequences: false,
@@ -389,7 +387,6 @@ export const updateLocalResourcesForChromiumMv3 = async () => {
 
     // eslint-disable-next-line no-restricted-syntax
     for (const ruleSetId of ruleSetIds) {
-        // eslint-disable-next-line no-await-in-loop
         const rawFilterList = await extractPreprocessedRawFilterList(ruleSetId, folder);
         const filterListNode = FilterListParser.parse(rawFilterList, {
             ...defaultParserOptions,
