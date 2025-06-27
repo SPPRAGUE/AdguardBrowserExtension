@@ -34,12 +34,12 @@ export const enum ContextMenuAction {
     UpdateFilters = 'context_update_antibanner_filters',
 }
 
-export type ContextMenuListener = () => unknown | Promise<unknown>;
+type ContextMenuListener = () => unknown | Promise<unknown>;
 
 /**
  * Type-safe mediator for context menu events.
  */
-export class ContextMenuEvents {
+class ContextMenuEvents {
     private listenersMap = new Map<unknown, ContextMenuListener>();
 
     /**
@@ -69,7 +69,7 @@ export class ContextMenuEvents {
         const listener = this.listenersMap.get(event);
 
         if (!listener) {
-            logger.error(`ContextMenuEvent not found listener for ${event}!`);
+            logger.error(`[ext.ContextMenuEvents.publishEvent]: contextMenuEvent not found listener for ${event}!`);
             return;
         }
 

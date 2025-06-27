@@ -16,11 +16,11 @@
  * along with AdGuard Browser Extension. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser, { Tabs } from 'webextension-polyfill';
+import browser, { type Tabs } from 'webextension-polyfill';
 
 import { getDomain, isHttpRequest } from '../tswebextension';
 import { UserAgent } from '../../common/user-agent';
-import { RegularFilterMetadata, SettingOption } from '../schema';
+import { type RegularFilterMetadata, SettingOption } from '../schema';
 import {
     groupStateStorage,
     metadataStorage,
@@ -32,15 +32,15 @@ import { FiltersApi } from '../api/filters/main';
 import { CommonFilterApi } from '../api/filters/common';
 import { AntibannerGroupsId } from '../../common/constants';
 
-export type BrowsingLanguage = {
-    language: string,
-    time: number,
+type BrowsingLanguage = {
+    language: string;
+    time: number;
 };
 
 /**
  * This service is used to auto-enable language-specific filters.
  */
-export class LocaleDetect {
+class LocaleDetect {
     static SUCCESS_HIT_COUNT = 3;
 
     static MAX_HISTORY_LENGTH = 10;

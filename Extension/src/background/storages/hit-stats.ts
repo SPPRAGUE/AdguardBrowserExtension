@@ -17,7 +17,7 @@
  */
 import { HIT_STATISTIC_KEY } from '../../common/constants';
 import { StringStorage } from '../utils/string-storage';
-import { HitStatsStorageData } from '../schema';
+import { type HitStatsStorageData } from '../schema';
 
 import { browserStorage } from './shared-instances';
 import { filterVersionStorage } from './filter-version';
@@ -28,7 +28,7 @@ import { filterVersionStorage } from './filter-version';
  *
  * @see {@link StringStorage}
  */
-export class HitStatsStorage extends StringStorage<typeof HIT_STATISTIC_KEY, HitStatsStorageData, 'async'> {
+class HitStatsStorage extends StringStorage<typeof HIT_STATISTIC_KEY, HitStatsStorageData, 'async'> {
     /**
      * Caches filter version if it is not cached yet.
      *

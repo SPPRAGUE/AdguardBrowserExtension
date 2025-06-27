@@ -18,8 +18,8 @@
 import { StringStorage } from '../utils/string-storage';
 import {
     SettingOption,
-    CustomFilterMetadata,
-    CustomFilterMetadataStorageData,
+    type CustomFilterMetadata,
+    type CustomFilterMetadataStorageData,
 } from '../schema';
 
 import { settingsStorage } from './settings';
@@ -30,7 +30,7 @@ import { settingsStorage } from './settings';
  *
  * @see {@link StringStorage}
  */
-export class CustomFilterMetadataStorage extends StringStorage<
+class CustomFilterMetadataStorage extends StringStorage<
     SettingOption.CustomFilters,
     CustomFilterMetadataStorageData,
     'sync'

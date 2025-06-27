@@ -18,15 +18,15 @@
 import { debounce } from 'lodash-es';
 
 import { ADGUARD_SETTINGS_KEY } from '../../common/constants';
-import { StorageInterface } from '../../common/storage';
-import { Settings, SettingOption } from '../schema';
+import { type StorageInterface } from '../../common/storage';
+import { type Settings, type SettingOption } from '../schema';
 
 import { browserStorage } from './shared-instances';
 
 /**
  * Storage for app settings.
  */
-export class SettingsStorage implements StorageInterface<SettingOption, Settings[SettingOption]> {
+class SettingsStorage implements StorageInterface<SettingOption, Settings[SettingOption]> {
     static saveTimeoutMs = 100;
 
     /**
