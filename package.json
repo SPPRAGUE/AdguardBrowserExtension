@@ -1,6 +1,6 @@
 {
     "name": "browser-extension",
-    "version": "5.4.2+6.build.20260513210057",
+    "version": "5.4.2+7.build.20260513210057",
     "description": "AdGuard Extension",
     "type": "module",
     "scripts": {
